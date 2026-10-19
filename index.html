@@ -350,8 +350,34 @@ function drawBullets() {
     }
   }
 
-  score = Math.floor(elapsed * 10);
+
+  // Check bullets against enemies
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    const bullet = bullets[i];
+    let bulletHit = false;
+
+    for (let j = enemies.length - 1; j >= 0; j--) {
+      const enemy = enemies[j];
+      const distance = Math.hypot(
+        bullet.x - enemy.x,
+        bullet.y - enemy.y
+      );
+
+      if (distance < bullet.r + enemy.r) {
+        enemies.splice(j, 1);
+        bullets.splice(i, 1);
+        score += 25;
+        bulletHit = true;
+        break;
+      }
+    }
+
+    if (bulletHit) continue;
+  }
+
+  score += 0; // Score is also increased by survival time below
   updateStats();
+  
 }
 
 function updateStats() {
