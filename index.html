@@ -211,10 +211,10 @@ function newGame() {
   elapsed = 0;
   spawnTimer = 0;
   damageTimer = 0;
-  enemies = [];
-bullets = [];
-shootTimer = 0;
-player = { x: W / 2, y: H / 2, r: 12, speed: 210 };
+    enemies = [];
+  bullets = [];
+  shootTimer = 0;
+  player = { x: W / 2, y: H / 2, r: 12, speed: 210 };
   running = true;
   lastTime = performance.now();
   $("overlay").classList.add("hidden");
