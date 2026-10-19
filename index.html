@@ -265,6 +265,67 @@ function update(dt) {
     spawnEnemy();
   }
 
+function shootAtNearestEnemy() {
+  if (!enemies.length || !player) return;
+
+  let target = null;
+  let nearestDistance = Infinity;
+
+  for (const enemy of enemies) {
+    const distance = Math.hypot(
+      enemy.x - player.x,
+      enemy.y - player.y
+    );
+
+    if (distance < nearestDistance) {
+      nearestDistance = distance;
+      target = enemy;
+    }
+  }
+
+  if (!target) return;
+
+  const dx = target.x - player.x;
+  const dy = target.y - player.y;
+  const distance = Math.hypot(dx, dy) || 1;
+
+  bullets.push({
+    x: player.x,
+    y: player.y,
+    vx: (dx / distance) * 430,
+    vy: (dy / distance) * 430,
+    r: 4,
+    damage: 1
+  });
+}
+
+function updateBullets(dt) {
+  for (const bullet of bullets) {
+    bullet.x += bullet.vx * dt;
+    bullet.y += bullet.vy * dt;
+  }
+
+  bullets = bullets.filter(bullet =>
+    bullet.x > -20 &&
+    bullet.x < W + 20 &&
+    bullet.y > -20 &&
+    bullet.y < H + 20
+  );
+}
+
+function drawBullets() {
+  for (const bullet of bullets) {
+    ctx.beginPath();
+    ctx.fillStyle = "#7dd3fc";
+    ctx.shadowColor = "#38bdf8";
+    ctx.shadowBlur = 12;
+    ctx.arc(bullet.x, bullet.y, bullet.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.shadowBlur = 0;
+  }
+  
   for (const e of enemies) {
     const vx = player.x - e.x;
     const vy = player.y - e.y;
