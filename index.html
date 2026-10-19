@@ -248,7 +248,14 @@ function update(dt) {
   elapsed += dt;
   spawnTimer += dt;
   damageTimer = Math.max(0, damageTimer - dt);
+shootTimer -= dt;
 
+if (shootTimer <= 0 && enemies.length > 0) {
+  shootAtNearestEnemy();
+  shootTimer = 0.28;
+}
+
+updateBullets(dt);
   let dx = 0, dy = 0;
   if (keys.has("ArrowLeft") || keys.has("a")) dx--;
   if (keys.has("ArrowRight") || keys.has("d")) dx++;
