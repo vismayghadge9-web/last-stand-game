@@ -1,0 +1,379 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Last Stand | Survival Arena</title>
+<style>
+:root {
+  --bg: #0b1220;
+  --panel: #151f31;
+  --border: #2b3950;
+  --blue: #38bdf8;
+  --red: #fb7185;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, Arial, sans-serif;
+  min-height: 100vh;
+}
+header {
+  max-width: 1000px;
+  margin: auto;
+  padding: 22px 18px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+h1 { font-size: 25px; margin: 0; letter-spacing: -1px; }
+h1 span { color: var(--blue); }
+.subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.badge {
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 7px 11px;
+  color: var(--blue);
+  font-size: 12px;
+  white-space: nowrap;
+}
+main { max-width: 1000px; margin: auto; padding: 10px 18px 30px; }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.stat {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  padding: 12px;
+}
+.stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; }
+.stat-value { font-size: 21px; font-weight: 750; margin-top: 3px; }
+.arena-wrap {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #0f1929;
+}
+canvas {
+  display: block;
+  width: 100%;
+  height: min(60vh, 490px);
+  min-height: 300px;
+  touch-action: none;
+}
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: #08111dd9;
+  text-align: center;
+}
+.overlay.hidden { display: none; }
+.overlay-card { max-width: 340px; }
+.overlay h2 { font-size: 29px; margin: 0 0 8px; }
+.overlay p { color: var(--muted); line-height: 1.6; }
+button {
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 18px;
+  background: var(--blue);
+  color: #062033;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+}
+button:hover { filter: brightness(1.08); }
+.hint {
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+  margin: 12px 0;
+}
+.controls {
+  display: grid;
+  grid-template-columns: repeat(3, 54px);
+  gap: 6px;
+  justify-content: center;
+  margin: 14px auto;
+  touch-action: none;
+}
+.controls button {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 12px 0;
+  font-size: 18px;
+  user-select: none;
+}
+.controls button:active { background: #24415e; }
+.controls .empty { visibility: hidden; }
+footer { text-align: center; color: var(--muted); font-size: 12px; padding: 8px 18px 24px; }
+@media (min-width: 701px) {
+  .controls { display: none; }
+}
+@media (max-width: 500px) {
+  header { align-items: flex-start; }
+  h1 { font-size: 22px; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .stat-value { font-size: 19px; }
+  main { padding-inline: 12px; }
+  canvas { height: 52vh; min-height: 300px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>LAST <span>STAND</span></h1>
+    <div class="subtitle">Survive the arena. Beat the odds.</div>
+  </div>
+  <div class="badge">PROTOTYPE 01</div>
+</header>
+
+<main>
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Health</div><div class="stat-value" id="health">100</div></div>
+    <div class="stat"><div class="stat-label">Score</div><div class="stat-value" id="score">0</div></div>
+    <div class="stat"><div class="stat-label">Survival</div><div class="stat-value" id="time">0s</div></div>
+    <div class="stat"><div class="stat-label">Enemies</div><div class="stat-value" id="enemies">0</div></div>
+  </div>
+
+  <div class="arena-wrap">
+    <canvas id="game" aria-label="Last Stand survival arena"></canvas>
+    <div class="overlay" id="overlay">
+      <div class="overlay-card">
+        <h2 id="overlayTitle">Ready, survivor?</h2>
+        <p id="overlayText">Move around the arena and dodge the red enemies. See how long you can survive.</p>
+        <button id="start">Start Survival</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">Computer: WASD / Arrow keys · Phone: use the controls below</div>
+  <div class="controls" id="controls">
+    <button class="empty" tabindex="-1"> </button>
+    <button data-key="ArrowUp" aria-label="Move up">↑</button>
+    <button class="empty" tabindex="-1"> </button>
+    <button data-key="ArrowLeft" aria-label="Move left">←</button>
+    <button data-key="ArrowDown" aria-label="Move down">↓</button>
+    <button data-key="ArrowRight" aria-label="Move right">→</button>
+  </div>
+</main>
+<footer>Last Stand · Built as a browser game portfolio project</footer>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const $ = id => document.getElementById(id);
+
+let W = 800, H = 460, player, enemies, running = false;
+let score = 0, health = 100, elapsed = 0;
+let lastTime = 0, spawnTimer = 0, damageTimer = 0;
+const keys = new Set();
+let best = 0;
+
+try { best = Number(localStorage.getItem("lastStandBest")) || 0; } catch {}
+
+function resize() {
+  const rect = canvas.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = rect.width;
+  H = rect.height;
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (player) {
+    player.x = Math.min(Math.max(player.x, player.r), W - player.r);
+    player.y = Math.min(Math.max(player.y, player.r), H - player.r);
+  }
+  draw();
+}
+window.addEventListener("resize", resize);
+
+function newGame() {
+  score = 0;
+  health = 100;
+  elapsed = 0;
+  spawnTimer = 0;
+  damageTimer = 0;
+  enemies = [];
+  player = { x: W / 2, y: H / 2, r: 12, speed: 210 };
+  running = true;
+  lastTime = performance.now();
+  $("overlay").classList.add("hidden");
+  updateStats();
+  requestAnimationFrame(loop);
+}
+
+function spawnEnemy() {
+  const side = Math.floor(Math.random() * 4);
+  let x = 0, y = 0;
+  if (side === 0) { x = Math.random() * W; y = -16; }
+  if (side === 1) { x = W + 16; y = Math.random() * H; }
+  if (side === 2) { x = Math.random() * W; y = H + 16; }
+  if (side === 3) { x = -16; y = Math.random() * H; }
+  enemies.push({
+    x, y, r: 9 + Math.random() * 4,
+    speed: 42 + Math.random() * 24 + elapsed * 0.7
+  });
+}
+
+function loop(now) {
+  if (!running) return;
+  const dt = Math.min((now - lastTime) / 1000, 0.035);
+  lastTime = now;
+  update(dt);
+  draw();
+  if (running) requestAnimationFrame(loop);
+}
+
+function update(dt) {
+  elapsed += dt;
+  spawnTimer += dt;
+  damageTimer = Math.max(0, damageTimer - dt);
+
+  let dx = 0, dy = 0;
+  if (keys.has("ArrowLeft") || keys.has("a")) dx--;
+  if (keys.has("ArrowRight") || keys.has("d")) dx++;
+  if (keys.has("ArrowUp") || keys.has("w")) dy--;
+  if (keys.has("ArrowDown") || keys.has("s")) dy++;
+
+  if (dx && dy) { dx *= Math.SQRT1_2; dy *= Math.SQRT1_2; }
+  player.x = Math.max(player.r, Math.min(W - player.r, player.x + dx * player.speed * dt));
+  player.y = Math.max(player.r, Math.min(H - player.r, player.y + dy * player.speed * dt));
+
+  const spawnEvery = Math.max(0.38, 1.35 - elapsed * 0.012);
+  if (spawnTimer >= spawnEvery) {
+    spawnTimer = 0;
+    spawnEnemy();
+  }
+
+  for (const e of enemies) {
+    const vx = player.x - e.x;
+    const vy = player.y - e.y;
+    const dist = Math.hypot(vx, vy) || 1;
+    e.x += vx / dist * e.speed * dt;
+    e.y += vy / dist * e.speed * dt;
+
+    if (dist < player.r + e.r && damageTimer <= 0) {
+      health = Math.max(0, health - 12);
+      damageTimer = 0.65;
+      if (health <= 0) {
+        endGame();
+        return;
+      }
+    }
+  }
+
+  score = Math.floor(elapsed * 10);
+  updateStats();
+}
+
+function updateStats() {
+  $("health").textContent = health;
+  $("score").textContent = score;
+  $("time").textContent = Math.floor(elapsed) + "s";
+  $("enemies").textContent = enemies ? enemies.length : 0;
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = "#0f1929";
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = "#26364a";
+  ctx.lineWidth = 1;
+  for (let x = 0; x < W; x += 32) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = 0; y < H; y += 32) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  if (enemies) {
+    for (const e of enemies) {
+      ctx.beginPath();
+      ctx.fillStyle = "#fb7185";
+      ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.fillStyle = "#ffe4e8";
+      ctx.arc(e.x - e.r * 0.25, e.y - e.r * 0.25, e.r * 0.22, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  if (player) {
+    ctx.beginPath();
+    ctx.fillStyle = "#38bdf8";
+    ctx.arc(player.x, player.y, player.r + 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.fillStyle = "#e0f2fe";
+    ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.fillStyle = "#0284c7";
+    ctx.arc(player.x, player.y, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function endGame() {
+  running = false;
+  best = Math.max(best, score);
+  try { localStorage.setItem("lastStandBest", String(best)); } catch {}
+  $("overlayTitle").textContent = "You were overrun!";
+  $("overlayText").textContent =
+    `You survived ${Math.floor(elapsed)} seconds and scored ${score}. Best score: ${best}. Ready to try again?`;
+  $("start").textContent = "Play Again";
+  $("overlay").classList.remove("hidden");
+}
+
+$("start").addEventListener("click", () => {
+  $("overlayTitle").textContent = "Ready, survivor?";
+  $("start").textContent = "Start Survival";
+  newGame();
+});
+
+window.addEventListener("keydown", e => {
+  const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(k)) e.preventDefault();
+  keys.add(k);
+});
+window.addEventListener("keyup", e => {
+  const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  keys.delete(k);
+});
+window.addEventListener("blur", () => keys.clear());
+
+document.querySelectorAll("[data-key]").forEach(button => {
+  const key = button.dataset.key;
+  const release = e => { e.preventDefault(); keys.delete(key); };
+  button.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    keys.add(key);
+    button.setPointerCapture?.(e.pointerId);
+  });
+  button.addEventListener("pointerup", release);
+  button.addEventListener("pointercancel", release);
+  button.addEventListener("lostpointercapture", () => keys.delete(key));
+});
+
+resize();
+</script>
+</body>
+</html>
